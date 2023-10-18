@@ -31,7 +31,7 @@ async def delete_event(ctx, arg):
 
     # Initialize variables
     channel = await ctx.author.create_dm()
-    event = {'name': '', 'startDate': '', 'startTime': '', 'endDate': '', 'endTime': '', 'type': '', 'desc': '', 'loc': ''}
+    event = {'name': '', 'startDate': '', 'startTime': '', 'endDate': '', 'endTime': '', 'priority':'', 'type': '', 'desc': '', 'url':'', 'location': ''}
     events = []
     eventFlag = False
 
@@ -47,15 +47,17 @@ async def delete_event(ctx, arg):
             end = row[3].split()
             event['endDate'] = end[0]
             event['endTime'] = convert_to_12(end[1][:-3])  # Convert to 12 hour format
-            event['type'] = row[4]
-            event['desc'] = row[5]
-            event['location']=row[6]
+            event['priority'] = row[4]
+            event['type'] = row[5]
+            event['url'] = row[6]
+            event['location']=row[7]
+            event['desc'] = row[8]
             # dates = [event['startDate'], event['endDate']]
 
             events.append(event)
 
             # reset event
-            event = {'name': '', 'startDate': '', 'startTime': '', 'endDate': '', 'endTime': '', 'type': '', 'desc': ''}
+            event = {'name': '', 'startDate': '', 'startTime': '', 'endDate': '', 'endTime': '', 'priority':'', 'type': '', 'desc': '', 'url':'', 'location': ''}
 
         # find all the existing schedules and display them
         if len(events) != 0:
@@ -68,6 +70,10 @@ async def delete_event(ctx, arg):
                 embed.add_field(name="End Time:", value=e['endTime'], inline=True)
                 embed.add_field(name="Event Type:", value=e['type'], inline=False)
                 #embed.add_field(name="Description:", value=e['desc'], inline=False)
+                if 'url' in e.keys():
+                    embed.add_field(name="Url:", value=e['url'], inline=False)
+                else:
+                    embed.add_field(name="Url:", value='', inline=False)
                 if 'location' in e.keys():
                     embed.add_field(name="Location:", value=e['location'], inline=False)
                 else:

@@ -6,6 +6,7 @@ from functionality.create_event_type import create_event_type
 from functionality.distance import get_distance
 from datetime import datetime, timedelta
 from parse.match import parse_period24
+from urllib.parse import urlparse
 
 
 def check_complete(start, start_date, end, end_date, array):
@@ -180,41 +181,62 @@ async def add_event(ctx, client):
     event_msg = event_msg.content  # Strips message to just the text the user entered
     await create_event_type(ctx, client, event_msg)  # Running event_type creation subroutine
     event_array.append(event_msg)
-    await channel.send(
-        "What is the location of the event?(Type None for no location/online)"
-    )
+    await channel.send("Is this an online event? Yes/No")
     event_msg = await client.wait_for("message", check=check)  # Waits for user input
-    event_msg = event_msg.content  # Strips message to just the text the user entered
-    event_array.append(event_msg)
-    dest=event_msg
-    print(dest)
-    if event_msg !='None':
+    event_msg = event_msg.content.lower()
+    if event_msg == "yes" or event_msg == "y" or event_msg == "yeah" or event_msg == "yup":
+        await channel.send("Please enter the event url below.")
+        event_msg = await client.wait_for("message", check=check)  # Waits for user input
+        event_msg = event_msg.content
+        valid_link = False
+        while not valid_link:
+            valid_link = check_event_url(event_msg)
+            if not valid_link:
+                await channel.send("Please enter a valid event url.")
+                event_msg = await client.wait_for("message", check=check)  # Waits for user input
+                event_msg = event_msg.content
+            else:
+                break
+        event_array.append(event_msg)
+        event_array.append("")
+        event_array.append("")
+    else:
+        event_array.append("")
         await channel.send(
-            "Do you want to block travel time for this event?(Yes/No)"
+            "What is the location of the event?(Type None for no location)"
         )
         event_msg = await client.wait_for("message", check=check)  # Waits for user input
-        travel_flag = event_msg.content
-        if travel_flag =='Yes':
+        event_msg = event_msg.content  # Strips message to just the text the user entered
+        event_array.append(event_msg)
+        dest=event_msg
+        print(dest)
+        if event_msg !='None':
             await channel.send(
-                "Enter exact string out of following modes:[DRIVING, WALKING, BICYCLING, TRANSIT])"
+                "Do you want to block travel time for this event?(Yes/No)"
             )
             event_msg = await client.wait_for("message", check=check)  # Waits for user input
-            mode = event_msg.content
-            
-            await channel.send(
-                "Enter source address"
-            )
-            event_msg = await client.wait_for("message", check=check)  # Waits for user input
-            src = event_msg.content
-            travel_time=get_distance(dest,src,mode)
-            end=event_array[1]
-            strt=(end-timedelta(seconds=travel_time))
-            
-            
-            current = Event("Travel",strt, end, "1", "", "", "")
-            await channel.send("Your Travel event was successfully created!")
-            create_event_tree(str(ctx.author.id))
-            add_event_to_file(str(ctx.author.id), current)
+            travel_flag = event_msg.content
+            if travel_flag =='Yes':
+                await channel.send(
+                    "Enter exact string out of following modes:[DRIVING, WALKING, BICYCLING, TRANSIT])"
+                )
+                event_msg = await client.wait_for("message", check=check)  # Waits for user input
+                mode = event_msg.content
+                
+                await channel.send(
+                    "Enter source address"
+                )
+                event_msg = await client.wait_for("message", check=check)  # Waits for user input
+                src = event_msg.content
+                travel_time=get_distance(dest,src,mode)
+                end=event_array[1]
+                strt=(end-timedelta(seconds=travel_time))
+                
+                
+                current = Event("Travel",strt, end, "1", "", "", "")
+                await channel.send("Your Travel event was successfully created!")
+                create_event_tree(str(ctx.author.id))
+                add_event_to_file(str(ctx.author.id), current)
             
             
             
@@ -234,7 +256,8 @@ async def add_event(ctx, client):
 
     # Tries to create an Event object from the user input
     try:
-        current = Event(event_array[0], event_array[1], event_array[2], event_array[3], event_array[4], event_array[6],event_array[5])
+        print(event_array)
+        current = Event(event_array[0], event_array[1], event_array[2], event_array[3], event_array[4], event_array[5],event_array[6], event_array[7])
         await channel.send("Your event was successfully created!")
         create_event_tree(str(ctx.author.id))
         add_event_to_file(str(ctx.author.id), current)
@@ -245,3 +268,10 @@ async def add_event(ctx, client):
         await channel.send(
             "There was an error creating your event. Make sure your formatting is correct and try creating the event again."
         )
+
+def check_event_url(url):
+    try:
+        valid_url = urlparse(url)
+        return all([valid_url.scheme, valid_url.netloc])
+    except:
+        return False

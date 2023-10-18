@@ -28,7 +28,7 @@ async def get_highlight(ctx, arg):
     
     # Initialize variables
     channel = await ctx.author.create_dm()
-    event = {'name': '', 'startDate': '', 'startTime': '', 'endDate': '', 'endTime': '', 'type': '', 'desc': '','loc': ''}
+    event = {'name': '', 'startDate': '', 'startTime': '', 'endDate': '', 'endTime': '', 'priority': '0', 'type': '', 'url':'', 'location':'','desc': '',}
     events = []
 
     # If there are events in the file
@@ -43,11 +43,17 @@ async def get_highlight(ctx, arg):
             end = row[3].split()
             event['endDate'] = end[0]
             event['endTime'] = convert_to_12(end[1][:-3])  # Convert to 12 hour format
-            event['type'] = row[4]
-            event['desc'] = row[5]
-            event['location']=row[6]
+            event['priority'] = row[4]
+            event['type'] = row[5]
+            event['url']= row[6]
+            event['location'] = row[7]
+            try :
+                event['desc'] = row[8]
+            
+            except IndexError:
+                event['desc'] = ''
+            
             dates = [event['startDate'], event['endDate']]
-
             flag = check_start_or_end(dates, day)
 
             if flag == 1:
@@ -66,18 +72,18 @@ async def get_highlight(ctx, arg):
                 events.append(event)
 
             # reset event
-            event = {'name': '', 'startDate': '', 'startTime': '', 'endDate': '', 'endTime': '', 'type': '', 'desc': ''}
+            event = {'name': '', 'startDate': '', 'startTime': '', 'endDate': '', 'endTime': '', 'priority': '0', 'type': '', 'url':'', 'location':'','desc': '',}
 
         # If events are on schedule for today
         if len(events) != 0:
             for e in events:
                 if e['flag'] == 1:
-                    await channel.send(f"You have {e['name']} scheduled , from {e['startTime']} to {e['endTime']}")
+                    await channel.send(f"You have {e['name']} scheduled , from {e['startTime']} to {e['endTime']} {'' if e['url'] is None or not e['url'] else "\n Link: " + e['url']}")
                 elif e['flag'] == 2:
                     await channel.send(
-                        "You have {e['name']} scheduled, from {e['startTime']} to {e['endTime']} on {e['endDate']}")
+                        f"You have {e['name']} scheduled, from {e['startTime']} to {e['endTime']} on {e['endDate']} {'' if e['url'] is None or not e['url'] else "\n Link: " + e['url']}")
                 elif e['flag'] == 3:
-                    await channel.send(f"You have {e['name']} scheduled, till {e['endTime']}")
+                    await channel.send(f"**You have {e['name']} scheduled, till {e['endTime']} {'' if e['url'] is None or not e['url'] else "\n Link: " + e['url']}**")
         else:
             if day is None:
                 await channel.send("Incorrect input format. \nHere is the format you should follow:\n!day "

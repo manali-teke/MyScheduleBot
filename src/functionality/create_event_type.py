@@ -179,7 +179,7 @@ async def create_event_type(ctx, client, event_msg):
             if flag == 0:
                 rows.append(current.to_list_event())
                 line_number = line_number + 1
-                await channel.send("Your event was successfully created!")
+                await channel.send("Your event type was successfully created!")
 
         # Open current user's calendar file for writing
         with open(

@@ -22,8 +22,7 @@ from functionality.edit_event import edit_event
 intents = discord.Intents.all()
 intents.all()
 
-intents = discord.Intents.all()
-bot = commands.Bot(command_prefix="!", intents=intents)   # Creates the bot with a command prefix of '!'
+bot = commands.Bot(command_prefix="!",intents=discord.Intents.all())  # Creates the bot with a command prefix of '!'
 bot.remove_command("help")  # Removes the help command, so it can be created using Discord embed pages later
 g_flag=0
 

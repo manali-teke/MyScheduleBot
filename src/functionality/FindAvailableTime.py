@@ -329,7 +329,7 @@ def getEventsOnDate(ctx, stdate):
 
         Events = []
         for line in rows:
-            eve = Event(line[1], line[2], line[3], line[4], line[5], line[6])
+            eve = Event(line[1], line[2], line[3], line[4], line[5], line[6], line[7])
             Events.append(eve)
     encrypt_file(key, os.path.expanduser("~/Documents") + "/ScheduleBot/Event/" + str(ctx.author.id) + ".csv")
     return Events

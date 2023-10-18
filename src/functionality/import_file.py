@@ -36,7 +36,11 @@ def verify_csv(data):
         return False
     if data.columns[5] != "Type":
         return False
-    if data.columns[6] != "Notes":
+    if data.columns[6] != "Url":
+        return False
+    if data.columns[7] != "Location":
+        return False
+    if data.columns[8] != "Notes":
         return False
 
     return True
@@ -94,6 +98,8 @@ def get_ics_data(calendar):
                'End Date',
                'Priority',
                'Type',
+               'Url',
+               'Location',
                'Notes']
 
     data = pd.DataFrame(columns=columns)
@@ -107,6 +113,8 @@ def get_ics_data(calendar):
                          'End Date': str(component.get('dtend').dt),
                          'Priority': '3',
                          'Type': '',
+                         'Url': component.get('url'),
+                         'Location': component.get('location'),
                          'Notes': component.get('description')}, ignore_index=True)
 
     return data
@@ -188,7 +196,7 @@ async def import_file(ctx, client):
     for index, row in data.iterrows():
         print(convert_time(row['Start Date']) + ' ' + convert_time(row['End Date']))
         time_period = parse_period(convert_time(row['Start Date']) + ' ' + convert_time(row['End Date']))
-        current = Event(row['Name'], time_period[0], time_period[1], row['Priority'], row['Type'], row['Notes'])
+        current = Event(row['Name'], time_period[0], time_period[1], row['Priority'], row['Type'], row["Url"], row['Location'], row['Notes'])
         add_event_to_file(str(ctx.author.id), current)
 
     await channel.send("Your events were successfully added!")
