@@ -16,8 +16,14 @@ from functionality.import_file import import_file
 from functionality.Google import connect_google
 from functionality.GoogleEvent import get_events
 from functionality.Delete_Event import delete_event
+from functionality.edit_event import edit_event
 
-bot = commands.Bot(command_prefix="!")  # Creates the bot with a command prefix of '!'
+
+intents = discord.Intents.all()
+intents.all()
+
+intents = discord.Intents.all()
+bot = commands.Bot(command_prefix="!", intents=intents)   # Creates the bot with a command prefix of '!'
 bot.remove_command("help")  # Removes the help command, so it can be created using Discord embed pages later
 g_flag=0
 
@@ -46,6 +52,7 @@ async def help(ctx):
                                    "today\\tomorrow\\yesterday\n!day 3 (3 days from now)\n!day -3 (3 days ago)\n!day "
                                    "4/20/22 (On Apr 20, 2022)", inline=False)
     em.add_field(name="typecreate", value="Creates a new event type", inline=True)
+    em.add_field(name="editevent", value="Edits an existing event", inline=False)
     em.add_field(name="typedelete", value="Deletes an event type", inline=True)
     em.add_field(name="exportfile", value="Exports a CSV file of your events", inline=False)
     em.add_field(name="importfile", value="Import events from a CSV or ICS file", inline=False)
@@ -305,6 +312,22 @@ async def freetime(ctx):
         - A message sent to the user channel stating every free time slot that is available today
     """
     await get_free_time(ctx, bot)
+
+#new add
+# Create a command for editevent
+@bot.command()
+async def editevent(ctx):
+    """
+    Function:
+        editevent
+    Description:
+        Calls the edit_event function to walk a user through the event editing process
+    Input:
+        ctx - Discord context window
+    Output:
+        - An edited event in the user's calendar file
+    """
+    await edit_event(ctx, bot)
 
 
 # Runs the bot (local machine)

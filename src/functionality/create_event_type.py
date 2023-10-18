@@ -206,3 +206,23 @@ async def create_event_type(ctx, client, event_msg):
             "There was an error while adding this event type. Make sure your formatting is correct and try creating the event type again."
         )
         return False
+    
+# new add
+def parse_user_input_to_datetime(user_input):
+    """
+    Function:
+        parse_user_input_to_datetime
+    Description:
+        Parses user input representing time in the format "hh:mm am/pm" to a datetime object.
+    Input:
+        user_input - User input string representing time
+    Output:
+        - Datetime object representing the parsed time
+    """
+    try:
+        parsed_time = datetime.strptime(user_input, "%I:%M %p")
+        return parsed_time
+    except ValueError:
+        # Handle invalid input
+        raise ValueError("Invalid time format. Please use the format 'hh:mm am/pm'")
+

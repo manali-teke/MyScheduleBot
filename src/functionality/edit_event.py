@@ -3,7 +3,6 @@ import csv
 from datetime import datetime
 from functionality.shared_functions import load_key, decrypt_file, encrypt_file
 from functionality.create_event_type import parse_user_input_to_datetime
-from functionality.export_file import export_file
 from discord.ext import commands
 
 async def edit_event(ctx, client):
@@ -59,14 +58,11 @@ async def edit_event(ctx, client):
 
         await channel.send("Your event was successfully edited!")
 
-        # Encrypt and save the updated events to file
-        encrypt_file(key, os.path.expanduser("~/Documents") + "/ScheduleBot/Event/" + user_id + ".csv")
-
-        # Export the updated events to a CSV file
-        await export_file(ctx)
-
     else:
         await channel.send("Invalid event number. Please try again.")
+
+    # Encrypt and save the updated events to file
+    encrypt_file(key, os.path.expanduser("~/Documents") + "/ScheduleBot/Event/" + user_id + ".csv")
 
 async def edit_event_type(ctx, client, selected_event):
     """
@@ -109,3 +105,6 @@ async def edit_event_type(ctx, client, selected_event):
 
     # Inform the user that the event type has been successfully updated
     await channel.send(f"Event type '{new_name}' has been successfully updated from {new_start_time} to {new_end_time}")
+
+# Call this function to edit events
+#await edit_event(ctx, client)
