@@ -78,12 +78,12 @@ async def get_highlight(ctx, arg):
         if len(events) != 0:
             for e in events:
                 if e['flag'] == 1:
-                    await channel.send(f"You have {e['name']} scheduled , from {e['startTime']} to {e['endTime']} {'' if e['url'] is None or not e['url'] else "\n Link: " + e['url']}")
+                    await channel.send(f"You have {e['name']} scheduled , from {e['startTime']} to {e['endTime']} {'' if e['url'] is None or not e['url'] else '{newLine}Link: ' + e['url']}")
                 elif e['flag'] == 2:
                     await channel.send(
-                        f"You have {e['name']} scheduled, from {e['startTime']} to {e['endTime']} on {e['endDate']} {'' if e['url'] is None or not e['url'] else "\n Link: " + e['url']}")
+                        f"You have {e['name']} scheduled, from {e['startTime']} to {e['endTime']} on {e['endDate']} {'' if e['url'] is None or not e['url'] else '{newLine}Link: ' + e['url']}")
                 elif e['flag'] == 3:
-                    await channel.send(f"**You have {e['name']} scheduled, till {e['endTime']} {'' if e['url'] is None or not e['url'] else "\n Link: " + e['url']}**")
+                    await channel.send(f"**You have {e['name']} scheduled, till {e['endTime']} {'' if e['url'] is None or not e['url'] else '{newLine}Link: ' + e['url']}**")
         else:
             if day is None:
                 await channel.send("Incorrect input format. \nHere is the format you should follow:\n!day "
