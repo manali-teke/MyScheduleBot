@@ -18,11 +18,10 @@ from functionality.GoogleEvent import get_events
 from functionality.Delete_Event import delete_event
 from functionality.edit_event import edit_event
 
-
 intents = discord.Intents.all()
-intents.all()
+intents = intents.all()
 
-bot = commands.Bot(command_prefix="!",intents=discord.Intents.all())  # Creates the bot with a command prefix of '!'
+bot = commands.Bot(command_prefix="!", intents=intents) # Creates the bot with a command prefix of '!'
 bot.remove_command("help")  # Removes the help command, so it can be created using Discord embed pages later
 g_flag=0
 
@@ -332,7 +331,7 @@ async def editevent(ctx):
 # Runs the bot (local machine)
 if __name__ == "__main__":
     from config import TOKEN
-
+    print(TOKEN)
     bot.run(TOKEN)
     
 

@@ -1,7 +1,8 @@
 import os
 import csv
 from datetime import datetime
-from functionality.shared_functions import load_key, decrypt_file, encrypt_file
+from functionality.shared_functions import load_key, decrypt_file, encrypt_file, add_event_to_file
+from functionality.shared_functions import read_event_file, create_event_tree, delete_event_from_file
 from functionality.create_event_type import parse_user_input_to_datetime
 from discord.ext import commands
 
@@ -25,23 +26,38 @@ async def edit_event(ctx, client):
 
     user_id = str(ctx.author.id)
 
-    # Checks if the calendar csv file exists, and creates it if it does not
-    if not os.path.exists(os.path.expanduser("~/Documents") + "/ScheduleBot/Event/" + user_id + ".csv"):
-        await channel.send("No events found to edit.")
-        return
+    # Open and read user's calendar file
+    create_event_tree(str(ctx.author.id))
+    rows = read_event_file(str(ctx.author.id)) 
+    event = {'number':0,'name': '', 'start_date': '', 'end_date': '', 'priority': '0', 'type': '', 'url':'', 'location':'','desc': '',}
+    events = []
 
-    key = load_key(user_id)
-    decrypt_file(key, os.path.expanduser("~/Documents") + "/ScheduleBot/Event/" + user_id + ".csv")
-
-    # Read existing events
-    with open(os.path.expanduser("~/Documents") + "/ScheduleBot/Event/" + user_id + ".csv", "r") as events_file:
-        events_reader = csv.reader(events_file)
-        events_data = list(events_reader)
-
-    # Display the list of events to the user
+   # If there are events in the file
+    if len(rows) > 1:
+        # For every row in calendar file
+        for row in rows:
+            # Get event details
+            print(row[0])
+            event['number']= row[0]
+            event['name'] = row[1]
+            event['start_date'] = row[2]
+            event['end_date'] = row[3]
+            event['priority'] = row[4]
+            event['type'] = row[5]
+            event['url'] = row[6]
+            event['location']=row[7]
+            try:
+                event['desc'] = row[8]
+            except IndexError:
+                event['desc'] = ''
+            events.append(event)
+    
+    print(events)
+    # # Display the list of events to the user
     events_msg = "Here are your existing events:\n"
-    for index, event in enumerate(events_data, start=1):
-        events_msg += f"{index}. {event[0]} - {event[1]} to {event[2]}\n"
+    for index, event in enumerate(events, start=1):
+        print(event)
+        events_msg += f"{index}. {event['number']} - {event['start_date']} to {event['end_date']}\n"
     await channel.send(events_msg)
 
     await channel.send("Which event do you want to edit? Enter the event number.")
@@ -50,61 +66,41 @@ async def edit_event(ctx, client):
     event_number = int(event_msg.content) - 1  # Adjust for 0-based indexing
 
     # Check if the entered event number is valid
-    if 0 <= event_number < len(events_data):
-        selected_event = events_data[event_number]
-
-        # Call the edit_event_type function to modify the event
-        await edit_event_type(ctx, client, selected_event)
-
-        await channel.send("Your event was successfully edited!")
-
-    else:
+    while not (0 <= event_number < len(events)):
         await channel.send("Invalid event number. Please try again.")
 
-    # Encrypt and save the updated events to file
-    encrypt_file(key, os.path.expanduser("~/Documents") + "/ScheduleBot/Event/" + user_id + ".csv")
-
-async def edit_event_type(ctx, client, selected_event):
-    """
-    Function:
-        edit_event_type
-    Description:
-        Walks a user through the event type editing process
-    Input:
-        ctx - Discord context window
-        client - Discord bot user
-        selected_event - The event to be edited
-    Output:
-        - An edited event type in the user's calendar file
-    """
-
-    channel = await ctx.author.create_dm()
-
-    def check(m):
-        return m.content is not None and m.channel == channel and m.author == ctx.author
-
-    # Display the selected event to the user
-    await channel.send(f"Selected event: {selected_event[0]} - {selected_event[1]} to {selected_event[2]}")
-
+    selected_event = events[event_number]
+    await channel.send(f"Selected event: {selected_event['name']} - {selected_event['start_date']} to {selected_event['end_date']}")
+        
     await channel.send("Enter the new name for the event:")
     event_msg = await client.wait_for("message", check=check)
     new_name = event_msg.content
 
-    await channel.send("Enter the new start time for the event (hh:mm am/pm):")
+    await channel.send("Enter the new start date and start time for the event (mm/dd/yy hh:mm am/pm):")
     event_msg = await client.wait_for("message", check=check)
-    new_start_time = parse_user_input_to_datetime(event_msg.content)
+    new_start_date_time = datetime.strptime(event_msg.content, "%m/%d/%y %I:%M %p")
 
-    await channel.send("Enter the new end time for the event (hh:mm am/pm):")
+    await channel.send("Enter the new end date and end time for the event (mm/dd/yy hh:mm am/pm):")
     event_msg = await client.wait_for("message", check=check)
-    new_end_time = parse_user_input_to_datetime(event_msg.content)
+    new_end_date_time = datetime.strptime(event_msg.content, "%m/%d/%y %I:%M %p")
 
     # Update the selected event
-    selected_event[0] = new_name
-    selected_event[1] = new_start_time.strftime("%I:%M %p")
-    selected_event[2] = new_end_time.strftime("%I:%M %p")
+    print(selected_event)
+    selected_event['name'] = new_name
+    selected_event['start_date'] = new_start_date_time
+    selected_event['end_date'] = new_end_date_time
+    print(selected_event)
+    try:
+        create_event_tree(str(ctx.author.id))
+        add_event_to_file(str(ctx.author.id), selected_event)
+    except Exception as e:
+        # Outputs an error message if the event could not be created
+        print(e)
+        TracebackType.print_exc()
+        await channel.send(
+            "There was an error creating your event. Make sure your formatting is correct and try creating the event again."
+        )
+    await channel.send("Your event was successfully edited!")    
 
-    # Inform the user that the event type has been successfully updated
-    await channel.send(f"Event type '{new_name}' has been successfully updated from {new_start_time} to {new_end_time}")
-
-# Call this function to edit events
-#await edit_event(ctx, client)
+    # Encrypt and save the updated events to file
+    # encrypt_file(key, os.path.expanduser("~/Documents") + "/ScheduleBot/Event/" + user_id + ".csv")
